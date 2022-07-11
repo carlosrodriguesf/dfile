@@ -22,7 +22,10 @@ func main() {
 		dbFilePath = os.Getenv("HOME") + "/dfile.db"
 	}
 
-	dbFile := dbfile.New(dbFilePath)
+	dbFile := dbfile.New(dbFilePath, dbfile.Options{
+		AutoPersist:      true,
+		AutoPersistCount: 1000,
+	})
 	if err := dbFile.Load(); err != nil {
 		log.Fatal(err)
 	}

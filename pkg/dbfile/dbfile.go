@@ -9,8 +9,8 @@ import (
 
 type (
 	Options struct {
-		AutoSync      bool
-		AutoSyncCount int
+		AutoPersist      bool
+		AutoPersistCount int
 	}
 	Entry struct {
 		Ready bool   `json:"ready"`
@@ -38,18 +38,22 @@ type (
 )
 
 func New(path string, opts ...Options) DBFile {
+	log.Println("db.path:", path)
 	var dbFile = dbFile{
 		dbFilePath: path,
 		data:       make(map[string]Entry),
 	}
 
 	if len(opts) > 0 {
-		if opt := opts[0]; opt.AutoSync {
+		if opt := opts[0]; opt.AutoPersist {
 			dbFile.autoPersist = true
-			dbFile.autoPersistCount = opt.AutoSyncCount
+			dbFile.autoPersistCount = opt.AutoPersistCount
 			if dbFile.autoPersistCount == 0 {
 				dbFile.autoPersistCount = 10000
 			}
+
+			log.Println("db.autoPersist: true")
+			log.Println("db.autoPersistCount:", dbFile.autoPersistCount)
 		}
 	}
 

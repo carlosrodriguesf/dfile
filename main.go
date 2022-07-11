@@ -9,7 +9,12 @@ import (
 )
 
 func main() {
-	customLogger, err := logger.New("output.log")
+	resourcePath := os.Getenv("DFILE_RESOURCE_PATH")
+	if resourcePath == "" {
+		resourcePath = os.Getenv("HOME")
+	}
+
+	customLogger, err := logger.New(resourcePath + "/dfile.log")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -17,12 +22,7 @@ func main() {
 
 	log.SetOutput(customLogger)
 
-	dbFilePath := os.Getenv("DFILE_DB_PATH")
-	if dbFilePath == "" {
-		dbFilePath = os.Getenv("HOME") + "/dfile.db"
-	}
-
-	dbFile := dbfile.New(dbFilePath, dbfile.Options{
+	dbFile := dbfile.New(resourcePath+"/dfile.db", dbfile.Options{
 		AutoPersist:      true,
 		AutoPersistCount: 1000,
 	})

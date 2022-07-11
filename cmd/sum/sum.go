@@ -16,17 +16,19 @@ func generate(dbFile dbfile.DBFile) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				mutex sync.Mutex
-				data  = dbFile.GetCopy()
+				keys  = dbFile.Keys()
 				calc  = calculator.New()
 				q     = queue.New(500)
 			)
 
-			for file, entry := range data {
+			for _, file := range keys {
+				file := file
+
+				entry, _ := dbFile.Get(file)
 				if entry.Ready {
 					continue
 				}
 
-				file := file
 				q.Run(func() {
 					hash, err := calc.Calculate(file)
 					if err != nil {

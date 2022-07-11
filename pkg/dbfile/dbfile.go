@@ -19,10 +19,11 @@ type (
 	}
 	DBFile interface {
 		CreateEntry(path string)
-		Set(file string, entry Entry)
-		Get(file string) (Entry, bool)
 		Has(file string) bool
-		GetCopy() map[string]Entry
+		Get(file string) (Entry, bool)
+		Set(file string, entry Entry)
+		Del(file string)
+		Keys() []string
 		Persist() error
 		Load() error
 	}
@@ -71,7 +72,7 @@ func (m *dbFile) Get(file string) (Entry, bool) {
 }
 
 func (m *dbFile) Set(file string, result Entry) {
-	log.Println("set: ", file, result)
+	log.Println("set: ", file)
 	m.data[file] = result
 	if m.autoPersist {
 		m.autoPersistCountCurrent++
@@ -81,6 +82,11 @@ func (m *dbFile) Set(file string, result Entry) {
 			}
 		}
 	}
+}
+
+func (m *dbFile) Del(file string) {
+	log.Println("del: ", file)
+	delete(m.data, file)
 }
 
 func (m *dbFile) CreateEntry(file string) {
@@ -128,10 +134,11 @@ func (m *dbFile) Load() error {
 	return nil
 }
 
-func (m *dbFile) GetCopy() map[string]Entry {
-	copied := make(map[string]Entry)
-	for path, entry := range m.data {
-		copied[path] = entry
+func (m *dbFile) Keys() []string {
+	i, keys := 0, make([]string, len(m.data))
+	for key, _ := range m.data {
+		keys[i] = key
+		i++
 	}
-	return copied
+	return keys
 }

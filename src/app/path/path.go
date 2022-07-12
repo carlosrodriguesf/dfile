@@ -2,14 +2,15 @@ package path
 
 import (
 	"github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
 	"github.com/carlosrodriguesf/dfile/src/pkg/scanner"
 )
 
 type (
-	AddOptions scanner.ScanOptions
+	AddConfig dbfile.PathEntry
 
 	App interface {
-		Add(ctx context.Context, path string, opts ...AddOptions) error
+		Add(ctx context.Context, path string, config AddConfig) error
 		Remove(ctx context.Context, path string) error
 	}
 

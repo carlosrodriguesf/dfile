@@ -12,7 +12,7 @@ func (a appImpl) Generate(ctx context.Context) error {
 	var (
 		mutex  sync.Mutex
 		dbFile = ctx.DBFile()
-		keys   = dbFile.Keys()
+		keys   = dbFile.GetFileKeys()
 		calc   = calculator.New()
 		q      = queue.New(10)
 	)
@@ -20,7 +20,7 @@ func (a appImpl) Generate(ctx context.Context) error {
 	for _, file := range keys {
 		file := file
 
-		entry, _ := dbFile.Get(file)
+		entry, _ := dbFile.GetFile(file)
 		if entry.Ready {
 			continue
 		}
@@ -28,7 +28,7 @@ func (a appImpl) Generate(ctx context.Context) error {
 		q.Run(func() {
 			hash, err := calc.Calculate(file)
 			if err != nil {
-				dbFile.Set(file, dbfile.Entry{
+				dbFile.SetFile(file, dbfile.FileEntry{
 					Ready: false,
 					Error: err.Error(),
 				})
@@ -36,7 +36,7 @@ func (a appImpl) Generate(ctx context.Context) error {
 			}
 
 			mutex.Lock()
-			dbFile.Set(file, dbfile.Entry{
+			dbFile.SetFile(file, dbfile.FileEntry{
 				Ready: true,
 				Hash:  hash,
 			})

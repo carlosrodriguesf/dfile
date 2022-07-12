@@ -12,25 +12,27 @@ type (
 		AutoPersist      bool
 		AutoPersistCount int
 	}
-	Entry struct {
-		Ready bool   `json:"ready"`
-		Hash  string `json:"content,omitempty"`
-		Error string `json:"error,omitempty"`
-	}
+
 	DBFile interface {
-		CreateEntry(path string)
-		Has(file string) bool
-		Get(file string) (Entry, bool)
-		Set(file string, entry Entry)
-		Del(file string)
-		Keys() []string
+		HasPath(path string) bool
+		SetPath(path string, entry PathEntry)
+		DelPath(path string)
+		GetPath(path string) PathEntry
+		GetPathKeys() []string
+
+		HasFile(file string) bool
+		SetFile(file string, entry FileEntry)
+		DelFile(file string)
+		GetFile(file string) (FileEntry, bool)
+		GetFileKeys() []string
+
 		Persist() error
 		Load() error
 	}
 	dbFile struct {
 		dbFilePath string
 
-		data map[string]Entry
+		data data
 
 		autoPersist             bool
 		autoPersistCount        int
@@ -40,9 +42,14 @@ type (
 
 func New(path string, opts ...Options) DBFile {
 	log.Println("db.path:", path)
+	log.Println("db.version: 2")
 	var dbFile = dbFile{
 		dbFilePath: path,
-		data:       make(map[string]Entry),
+		data: data{
+			Version: 2,
+			Paths:   map[string]PathEntry{},
+			Files:   map[string]FileEntry{},
+		},
 	}
 
 	if len(opts) > 0 {
@@ -61,19 +68,40 @@ func New(path string, opts ...Options) DBFile {
 	return &dbFile
 }
 
-func (m *dbFile) Has(file string) bool {
-	_, ok := m.data[file]
+func (m *dbFile) HasPath(path string) bool {
+	_, ok := m.data.Paths[path]
 	return ok
 }
 
-func (m *dbFile) Get(file string) (Entry, bool) {
-	result, ok := m.data[file]
-	return result, ok
+func (m *dbFile) SetPath(path string, entry PathEntry) {
+	m.data.Paths[path] = entry
 }
 
-func (m *dbFile) Set(file string, result Entry) {
+func (m *dbFile) DelPath(path string) {
+	delete(m.data.Paths, path)
+}
+
+func (m *dbFile) GetPath(path string) PathEntry {
+	return m.data.Paths[path]
+}
+
+func (m *dbFile) GetPathKeys() []string {
+	i, keys := 0, make([]string, len(m.data.Paths))
+	for key, _ := range m.data.Paths {
+		keys[i] = key
+		i++
+	}
+	return keys
+}
+
+func (m *dbFile) HasFile(file string) bool {
+	_, ok := m.data.Files[file]
+	return ok
+}
+
+func (m *dbFile) SetFile(file string, result FileEntry) {
 	log.Println("set: ", file)
-	m.data[file] = result
+	m.data.Files[file] = result
 	if m.autoPersist {
 		m.autoPersistCountCurrent++
 		if m.autoPersistCountCurrent == m.autoPersistCount {
@@ -84,21 +112,27 @@ func (m *dbFile) Set(file string, result Entry) {
 	}
 }
 
-func (m *dbFile) Del(file string) {
+func (m *dbFile) GetFile(file string) (FileEntry, bool) {
+	result, ok := m.data.Files[file]
+	return result, ok
+}
+
+func (m *dbFile) GetFileKeys() []string {
+	i, keys := 0, make([]string, len(m.data.Files))
+	for key, _ := range m.data.Files {
+		keys[i] = key
+		i++
+	}
+	return keys
+}
+
+func (m *dbFile) DelFile(file string) {
 	log.Println("del: ", file)
-	delete(m.data, file)
+	delete(m.data.Files, file)
 }
 
 func (m *dbFile) CreateEntry(file string) {
-	m.Set(file, Entry{})
-}
-
-func (m *dbFile) GetPreviousDataKeyMap() map[string]bool {
-	fileMap := make(map[string]bool)
-	for key, _ := range m.data {
-		fileMap[key] = true
-	}
-	return fileMap
+	m.SetFile(file, FileEntry{})
 }
 
 func (m *dbFile) Persist() error {
@@ -132,13 +166,4 @@ func (m *dbFile) Load() error {
 	}
 
 	return nil
-}
-
-func (m *dbFile) Keys() []string {
-	i, keys := 0, make([]string, len(m.data))
-	for key, _ := range m.data {
-		keys[i] = key
-		i++
-	}
-	return keys
 }

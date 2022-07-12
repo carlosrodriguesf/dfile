@@ -7,10 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func scan(ctx context.Context) *cobra.Command {
+func add(ctx context.Context) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "scan [path]",
-		Short: "scan or remove path to sum.db",
+		Use:   "add [path]",
+		Short: "add or remove path to sum.db",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			acceptExtensions, err := cmd.Flags().GetStringArray("extensions")
@@ -23,14 +23,14 @@ func scan(ctx context.Context) *cobra.Command {
 				return err
 			}
 
-			return app.Path().Add(ctx, args[0], path.AddOptions{
+			return app.Path().Add(ctx, args[0], path.AddConfig{
 				AcceptExtensions: acceptExtensions,
 				IgnoreFolders:    ignoreFolders,
 			})
 		},
 	}
 	cmd.Flags().StringArrayP("extensions", "e", []string{"jpg", "png", "mp4", "mov"}, "Extensões válidas.")
-	cmd.Flags().StringArrayP("ignore", "i", []string{"jpg", "png", "mp4", "mov"}, "Extensões válidas.")
+	cmd.Flags().StringArrayP("ignore", "i", []string{".debris", ".idea", ".git", ".gradle"}, "Extensões válidas.")
 
 	return &cmd
 }

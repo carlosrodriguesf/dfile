@@ -14,14 +14,16 @@ func (a appImpl) Remove(ctx context.Context, path string) error {
 		return err
 	}
 
-	for _, file := range dbFile.Keys() {
+	dbFile.DelPath(path)
+
+	for _, file := range dbFile.GetFileKeys() {
 		match, err := filepath.Match(path, file)
 		if err != nil {
 			log.Printf("error: %v", err)
 			return err
 		}
 		if match {
-			dbFile.Del(file)
+			dbFile.DelFile(file)
 		}
 	}
 

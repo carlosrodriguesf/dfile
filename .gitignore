@@ -1,5 +1,6 @@
 .idea
 *.db
+*.db.backup
 test
 *.log
 bin

@@ -8,6 +8,7 @@ import (
 type (
 	App interface {
 		Generate(ctx context.Context) error
+		Duplicated(ctx context.Context) map[string][]string
 	}
 
 	appImpl struct {

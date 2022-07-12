@@ -12,5 +12,6 @@ func Sum(ctx context.Context) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 	pathCmd.AddCommand(generate(ctx))
+	pathCmd.AddCommand(duplicated(ctx))
 	return &pathCmd
 }

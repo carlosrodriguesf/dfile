@@ -13,5 +13,8 @@ path-list: build
 sum-generate: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log sum generate
 
+sum-duplicated: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated
+
 build:
 	go build -o bin/dfile main.go

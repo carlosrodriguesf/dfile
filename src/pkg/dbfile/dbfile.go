@@ -23,7 +23,7 @@ type (
 		HasFile(file string) bool
 		SetFile(file string, entry FileEntry)
 		DelFile(file string)
-		GetFile(file string) (FileEntry, bool)
+		GetFile(file string) FileEntry
 		GetFileKeys() []string
 
 		Persist() error
@@ -112,9 +112,8 @@ func (m *dbFile) SetFile(file string, result FileEntry) {
 	}
 }
 
-func (m *dbFile) GetFile(file string) (FileEntry, bool) {
-	result, ok := m.data.Files[file]
-	return result, ok
+func (m *dbFile) GetFile(file string) FileEntry {
+	return m.data.Files[file]
 }
 
 func (m *dbFile) GetFileKeys() []string {

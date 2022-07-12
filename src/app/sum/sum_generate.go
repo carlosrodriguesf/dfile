@@ -30,7 +30,7 @@ func (a appImpl) Generate(ctx context.Context) error {
 		file := file
 
 		mutex.Lock()
-		entry, _ := dbFile.GetFile(file)
+		entry := dbFile.GetFile(file)
 		mutex.Unlock()
 
 		if entry.Ready || entry.Error != "" {

@@ -8,4 +8,4 @@ generate-sum: build
 	bin/dfile -d dfile.local.db -l dfile.local.log sum generate
 
 build:
-	go build -o bin/dfile ./src/main.go
+	go build -o bin/dfile src/main.go

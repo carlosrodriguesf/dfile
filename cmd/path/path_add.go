@@ -2,18 +2,20 @@ package path
 
 import (
 	"context"
-	"github.com/carlosrodriguesf/dfile/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/cmd/_context"
 	"github.com/carlosrodriguesf/dfile/pkg/scanner"
 	"github.com/spf13/cobra"
 	"path/filepath"
 )
 
-func scan(dbFile dbfile.DBFile) *cobra.Command {
+func scan(ctx _context.Context) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "scan [path]",
 		Short: "scan or remove path to sum.db",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			dbFile := ctx.DBFile()
+
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return err

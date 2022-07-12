@@ -1,11 +1,11 @@
-scan:
-	go run main.go path scan ./test/
+scan: build
+	bin/dfile -d dfile.local.db -l dfile.local.log path scan ./test/
 
-remove:
-	go run main.go path remove "./test/*"
+remove: build
+	bin/dfile -d dfile.local.db -l dfile.local.log path remove "./test/*"
 
-generate-sum:
-	go run main.go sum generate
+generate-sum: build
+	bin/dfile -d dfile.local.db -l dfile.local.log sum generate
 
 build:
 	go build -o bin/dfile ./main.go

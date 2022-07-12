@@ -1,6 +1,7 @@
 package sum
 
 import (
+	"github.com/carlosrodriguesf/dfile/cmd/_context"
 	"github.com/carlosrodriguesf/dfile/pkg/calculator"
 	"github.com/carlosrodriguesf/dfile/pkg/dbfile"
 	"github.com/carlosrodriguesf/dfile/pkg/queue"
@@ -8,17 +9,18 @@ import (
 	"sync"
 )
 
-func generate(dbFile dbfile.DBFile) *cobra.Command {
+func generate(ctx _context.Context) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "generate",
 		Short: "generate sum for scanner paths",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				mutex sync.Mutex
-				keys  = dbFile.Keys()
-				calc  = calculator.New()
-				q     = queue.New(500)
+				mutex  sync.Mutex
+				dbFile = ctx.DBFile()
+				keys   = dbFile.Keys()
+				calc   = calculator.New()
+				q      = queue.New(10)
 			)
 
 			for _, file := range keys {
@@ -57,12 +59,12 @@ func generate(dbFile dbfile.DBFile) *cobra.Command {
 	return &cmd
 }
 
-func Sum(dbFile dbfile.DBFile) *cobra.Command {
+func Sum(ctx _context.Context) *cobra.Command {
 	pathCmd := cobra.Command{
 		Use:   "sum [generate]",
 		Short: "generate sum for scanned paths",
 		Args:  cobra.ExactArgs(1),
 	}
-	pathCmd.AddCommand(generate(dbFile))
+	pathCmd.AddCommand(generate(ctx))
 	return &pathCmd
 }

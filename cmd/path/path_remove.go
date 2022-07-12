@@ -1,18 +1,20 @@
 package path
 
 import (
-	"github.com/carlosrodriguesf/dfile/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/cmd/_context"
 	"github.com/spf13/cobra"
 	"log"
 	"path/filepath"
 )
 
-func remove(dbFile dbfile.DBFile) *cobra.Command {
+func remove(ctx _context.Context) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "remove [path]",
 		Short: "remove path from sum.db",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			dbFile := ctx.DBFile()
+
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return err

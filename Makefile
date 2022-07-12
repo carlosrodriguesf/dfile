@@ -1,11 +1,14 @@
-add-path: build
+path-add: build
 	bin/dfile -d dfile.local.db -l dfile.local.log path add ./test/
 
-remove-path: build
+path-remove: build
 	bin/dfile -d dfile.local.db -l dfile.local.log path remove "./test/*"
 
-generate-sum: build
+path-sync: build
+	bin/dfile -d dfile.local.db -l dfile.local.log path sync
+
+sum-generate: build
 	bin/dfile -d dfile.local.db -l dfile.local.log sum generate
 
 build:
-	go build -o bin/dfile src/main.go
+	go build -o bin/dfile main.go

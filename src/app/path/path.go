@@ -12,6 +12,7 @@ type (
 	App interface {
 		Add(ctx context.Context, path string, config AddConfig) error
 		Remove(ctx context.Context, path string) error
+		Sync(ctx context.Context) error
 	}
 
 	appImpl struct {

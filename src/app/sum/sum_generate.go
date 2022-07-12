@@ -29,13 +29,20 @@ func (a appImpl) Generate(ctx context.Context) error {
 	for _, file := range keys {
 		file := file
 
+		mutex.Lock()
 		entry, _ := dbFile.GetFile(file)
-		if entry.Ready {
+		mutex.Unlock()
+
+		if entry.Ready || entry.Error != "" {
 			continue
 		}
 
 		q.Run(func() {
 			hash, err := calc.Calculate(file)
+
+			mutex.Lock()
+			defer mutex.Unlock()
+
 			if err != nil {
 				dbFile.SetFile(file, dbfile.FileEntry{
 					Ready: false,
@@ -43,13 +50,10 @@ func (a appImpl) Generate(ctx context.Context) error {
 				})
 				return
 			}
-
-			mutex.Lock()
 			dbFile.SetFile(file, dbfile.FileEntry{
 				Ready: true,
 				Hash:  hash,
 			})
-			mutex.Unlock()
 		})
 	}
 

@@ -10,6 +10,7 @@ type (
 		Hash  string `json:"content,omitempty"`
 		Error string `json:"error,omitempty"`
 	}
+
 	data struct {
 		Version int                  `json:"version"`
 		Paths   map[string]PathEntry `json:"paths"`

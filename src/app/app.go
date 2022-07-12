@@ -16,6 +16,7 @@ func Path() path.App {
 	if container.path == nil {
 		container.path = path.New(
 			scanner.New(),
+			Sum(),
 		)
 	}
 	return container.path

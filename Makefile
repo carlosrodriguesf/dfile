@@ -10,6 +10,9 @@ path-sync: build
 path-list: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log path list
 
+path-watch: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log path watch
+
 sum-generate: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log sum generate
 

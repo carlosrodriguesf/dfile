@@ -13,6 +13,10 @@ type (
 		AutoPersistCount int
 	}
 
+	PersistOptions struct {
+		Indented bool
+	}
+
 	DBFile interface {
 		HasPath(path string) bool
 		SetPath(path string, entry PathEntry)
@@ -26,7 +30,7 @@ type (
 		GetFile(file string) FileEntry
 		GetFileKeys() []string
 
-		Persist() error
+		Persist(opts ...PersistOptions) error
 		Load() error
 	}
 	dbFile struct {
@@ -100,7 +104,7 @@ func (m *dbFile) HasFile(file string) bool {
 }
 
 func (m *dbFile) SetFile(file string, result FileEntry) {
-	log.Println("set: ", file)
+	log.Println("set file:", file)
 	m.data.Files[file] = result
 	if m.autoPersist {
 		m.autoPersistCountCurrent++
@@ -113,10 +117,12 @@ func (m *dbFile) SetFile(file string, result FileEntry) {
 }
 
 func (m *dbFile) GetFile(file string) FileEntry {
+	log.Println("get file:", file)
 	return m.data.Files[file]
 }
 
 func (m *dbFile) GetFileKeys() []string {
+	log.Println("get file keys")
 	i, keys := 0, make([]string, len(m.data.Files))
 	for key, _ := range m.data.Files {
 		keys[i] = key
@@ -126,41 +132,47 @@ func (m *dbFile) GetFileKeys() []string {
 }
 
 func (m *dbFile) DelFile(file string) {
-	log.Println("del: ", file)
+	log.Println("del file:", file)
 	delete(m.data.Files, file)
 }
 
-func (m *dbFile) CreateEntry(file string) {
-	m.SetFile(file, FileEntry{})
-}
-
-func (m *dbFile) Persist() error {
-	dt, err := json.MarshalIndent(m.data, "", "  ")
+func (m *dbFile) Persist(opts ...PersistOptions) error {
+	log.Println("recreating db file")
+	file, err := os.Create(m.dbFilePath)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(m.dbFilePath, dt, 0700)
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	if len(opts) > 0 && opts[0].Indented {
+		encoder.SetIndent("", "  ")
+	}
+
+	log.Println("saving db data")
+	err = encoder.Encode(m.data)
 	if err != nil {
 		return err
 	}
-	m.autoPersistCountCurrent = 0
+
 	return nil
 }
 
 func (m *dbFile) Load() error {
-	dataBytes, err := os.ReadFile(m.dbFilePath)
+	log.Println("opening db file:", m.dbFilePath)
+	file, err := os.OpenFile(m.dbFilePath, os.O_RDWR, 0700)
 	if err != nil {
 		if err == os.ErrNotExist || err.Error() == fmt.Sprintf("open %s: no such file or directory", m.dbFilePath) {
 			return nil
 		}
-		log.Printf("error: %v", err)
 		return err
 	}
+	defer file.Close()
 
-	err = json.Unmarshal(dataBytes, &m.data)
+	log.Println("loading db data")
+	err = json.NewDecoder(file).Decode(&m.data)
 	if err != nil {
-		log.Printf("error: %v", err)
 		return err
 	}
 

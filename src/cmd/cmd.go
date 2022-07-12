@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/carlosrodriguesf/dfile/src/cmd/db"
 	"github.com/carlosrodriguesf/dfile/src/cmd/path"
 	"github.com/carlosrodriguesf/dfile/src/cmd/sum"
 	context2 "github.com/carlosrodriguesf/dfile/src/pkg/context"
@@ -51,6 +52,7 @@ func Run() error {
 
 	rootCmd.AddCommand(path.Path(ctx))
 	rootCmd.AddCommand(sum.Sum(ctx))
+	rootCmd.AddCommand(db.DB(ctx))
 
 	rootCmd.Flags().StringVarP(&dbFilePath, "database", "d", resourcePath+"/dfile.db", "Database file")
 	rootCmd.Flags().StringVarP(&logFilePath, "log-file", "l", resourcePath+"/dfile.log", "Log file")

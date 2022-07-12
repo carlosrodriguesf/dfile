@@ -16,5 +16,17 @@ sum-generate: build
 sum-duplicated: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated
 
+sum-duplicated-json: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated -o json
+
+sum-duplicated-json-i: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated -o json-i
+
+db-rewrite: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log db rewrite
+
+db-rewrite-indented: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log db rewrite -i
+
 build:
 	go build -o bin/dfile main.go

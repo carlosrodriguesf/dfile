@@ -10,29 +10,31 @@ import (
 )
 
 type (
-	Options struct {
+	ScanOptions struct {
 		IgnoreFolders    []string
 		AcceptExtensions []string
 	}
 	Scanner interface {
-		Scan(ctx context.Context, path string) (files []string, err error)
+		Scan(ctx context.Context, path string, opts ...ScanOptions) (allFiles []string, err error)
 	}
 	scanner struct {
-		ignoreNames      map[string]bool
+		ignoreFolders    map[string]bool
 		acceptExtensions map[string]bool
 
 		errGroup *errgroup.Group
 	}
 )
 
-func New(opts Options) Scanner {
-	return &scanner{
-		ignoreNames:      mapStringArray(opts.IgnoreFolders),
-		acceptExtensions: mapStringArray(opts.AcceptExtensions),
-	}
+func New() Scanner {
+	return &scanner{}
 }
 
-func (s scanner) Scan(ctx context.Context, path string) (allFiles []string, err error) {
+func (s scanner) Scan(ctx context.Context, path string, opts ...ScanOptions) (allFiles []string, err error) {
+	if len(opts) > 0 {
+		s.acceptExtensions = mapStringArray(opts[0].AcceptExtensions)
+		s.ignoreFolders = mapStringArray(opts[0].IgnoreFolders)
+	}
+
 	var mutex sync.Mutex
 
 	allFiles = make([]string, 0)
@@ -51,7 +53,7 @@ func (s scanner) Scan(ctx context.Context, path string) (allFiles []string, err 
 	return
 }
 
-func (s scanner) scan(ctx context.Context, path string, addFiles func(files []string)) {
+func (s *scanner) scan(ctx context.Context, path string, addFiles func(files []string)) {
 	s.errGroup.Go(func() error {
 		log.Println("scanning: ", path)
 
@@ -93,7 +95,7 @@ func (s scanner) scan(ctx context.Context, path string, addFiles func(files []st
 
 func (s *scanner) ignore(entry os.DirEntry) bool {
 	name := entry.Name()
-	if s.ignoreNames[name] {
+	if len(s.ignoreFolders) > 0 && s.ignoreFolders[name] {
 		return true
 	}
 	if len(s.acceptExtensions) > 0 && !entry.IsDir() && !s.acceptExtensions[getExtension(entry.Name())] {

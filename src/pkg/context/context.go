@@ -1,8 +1,8 @@
-package _context
+package context
 
 import (
 	"context"
-	"github.com/carlosrodriguesf/dfile/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
 )
 
 type (

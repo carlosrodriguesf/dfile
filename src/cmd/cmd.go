@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"context"
-	"github.com/carlosrodriguesf/dfile/cmd/_context"
-	"github.com/carlosrodriguesf/dfile/cmd/path"
-	"github.com/carlosrodriguesf/dfile/cmd/sum"
-	"github.com/carlosrodriguesf/dfile/pkg/dbfile"
-	"github.com/carlosrodriguesf/dfile/pkg/logger"
+	"github.com/carlosrodriguesf/dfile/src/cmd/path"
+	"github.com/carlosrodriguesf/dfile/src/cmd/sum"
+	context2 "github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/pkg/logger"
 	"github.com/spf13/cobra"
 	"io"
 	"log"
@@ -29,7 +29,7 @@ func startLogger(logFilePath string) (io.WriteCloser, error) {
 	return logWriter, nil
 }
 
-func startDBFile(ctx _context.Context, dbFilePath string) error {
+func startDBFile(ctx context2.Context, dbFilePath string) error {
 	dbFile := dbfile.New(dbFilePath, dbfile.Options{
 		AutoPersist:      true,
 		AutoPersistCount: 1000,
@@ -44,7 +44,7 @@ func Run() error {
 		logWriter               io.WriteCloser
 
 		resourcePath = getDefaultResourcePath()
-		ctx          = _context.New(context.Background())
+		ctx          = context2.New(context.Background())
 		rootCmd      = cobra.Command{TraverseChildren: true}
 	)
 

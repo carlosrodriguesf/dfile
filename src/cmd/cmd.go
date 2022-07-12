@@ -20,8 +20,8 @@ func getDefaultResourcePath() string {
 	return os.Getenv("HOME")
 }
 
-func startLogger(logFilePath string) (io.WriteCloser, error) {
-	logWriter, err := logger.New(logFilePath)
+func startLogger(logFilePath string, verbose bool) (io.WriteCloser, error) {
+	logWriter, err := logger.New(logFilePath, verbose)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +41,7 @@ func startDBFile(ctx context2.Context, dbFilePath string) error {
 func Run() error {
 	var (
 		dbFilePath, logFilePath string
+		verbose                 bool
 		logWriter               io.WriteCloser
 
 		resourcePath = getDefaultResourcePath()
@@ -53,9 +54,10 @@ func Run() error {
 
 	rootCmd.Flags().StringVarP(&dbFilePath, "database", "d", resourcePath+"/dfile.db", "Database file")
 	rootCmd.Flags().StringVarP(&logFilePath, "log-file", "l", resourcePath+"/dfile.log", "Log file")
+	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show all logs in console output")
 
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) (err error) {
-		if logWriter, err = startLogger(logFilePath); err != nil {
+		if logWriter, err = startLogger(logFilePath, verbose); err != nil {
 			log.Printf("error: %v", err)
 			return err
 		}

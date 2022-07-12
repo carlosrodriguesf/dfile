@@ -3,6 +3,7 @@ package logger
 import (
 	"io"
 	"os"
+	"strings"
 )
 
 type logger struct {
@@ -11,11 +12,14 @@ type logger struct {
 }
 
 func New(outputFile string, verbose bool) (io.WriteCloser, error) {
-	file, err := os.Create(outputFile)
+	file, err := os.OpenFile(outputFile, os.O_APPEND|os.O_WRONLY, 0700)
 	if err != nil {
-		return nil, err
+		if err == os.ErrNotExist || strings.HasSuffix(err.Error(), "no such file or directory") {
+			file, err = os.Create(outputFile)
+		} else {
+			return nil, err
+		}
 	}
-
 	return &logger{
 		file:    file,
 		verbose: verbose,

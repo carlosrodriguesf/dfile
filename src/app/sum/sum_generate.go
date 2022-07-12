@@ -5,6 +5,7 @@ import (
 	"github.com/carlosrodriguesf/dfile/src/pkg/context"
 	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
 	"github.com/carlosrodriguesf/dfile/src/pkg/queue"
+	"log"
 	"sync"
 )
 
@@ -16,6 +17,14 @@ func (a appImpl) Generate(ctx context.Context) error {
 		calc   = calculator.New()
 		q      = queue.New(10)
 	)
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("panic: %v", r)
+			dbFile.Persist()
+			panic(r)
+		}
+	}()
 
 	for _, file := range keys {
 		file := file

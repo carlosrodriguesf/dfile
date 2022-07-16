@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
-	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
 	"github.com/spf13/cobra"
 	"log"
 )

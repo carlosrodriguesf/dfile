@@ -1,9 +1,9 @@
 package sum
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
-	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
-	"github.com/carlosrodriguesf/dfile/src/pkg/queue"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/queue"
 	"log"
 	"sync"
 )

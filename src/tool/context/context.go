@@ -2,7 +2,7 @@ package context
 
 import (
 	"context"
-	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
 )
 
 type (

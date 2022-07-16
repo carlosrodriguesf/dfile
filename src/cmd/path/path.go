@@ -1,7 +1,7 @@
 package path
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"github.com/spf13/cobra"
 )
 

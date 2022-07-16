@@ -1,8 +1,8 @@
 package sum
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/calculator"
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/calculator"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"sync"
 )
 

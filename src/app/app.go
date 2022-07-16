@@ -4,8 +4,8 @@ import (
 	"github.com/carlosrodriguesf/dfile/src/app/path"
 	"github.com/carlosrodriguesf/dfile/src/app/sum"
 	"github.com/carlosrodriguesf/dfile/src/app/watch"
-	"github.com/carlosrodriguesf/dfile/src/pkg/calculator"
-	"github.com/carlosrodriguesf/dfile/src/pkg/scanner"
+	"github.com/carlosrodriguesf/dfile/src/tool/calculator"
+	"github.com/carlosrodriguesf/dfile/src/tool/scanner"
 )
 
 var container = struct {

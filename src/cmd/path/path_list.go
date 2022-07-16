@@ -3,7 +3,7 @@ package path
 import (
 	"fmt"
 	"github.com/carlosrodriguesf/dfile/src/app"
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"github.com/spf13/cobra"
 )
 

@@ -1,7 +1,7 @@
 package sum
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
 )
 
 func (a appImpl) Duplicated(ctx context.Context) map[string][]string {

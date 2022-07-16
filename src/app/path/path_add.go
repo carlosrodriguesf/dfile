@@ -1,10 +1,10 @@
 package path
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/apperrors"
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
-	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
-	"github.com/carlosrodriguesf/dfile/src/pkg/scanner"
+	"github.com/carlosrodriguesf/dfile/src/tool/apperrors"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/scanner"
 	"path/filepath"
 )
 

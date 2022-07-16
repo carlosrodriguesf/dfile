@@ -3,8 +3,8 @@ package watch
 import (
 	"github.com/carlosrodriguesf/dfile/src/app/path"
 	"github.com/carlosrodriguesf/dfile/src/app/sum"
-	"github.com/carlosrodriguesf/dfile/src/pkg/context"
-	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
 	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"

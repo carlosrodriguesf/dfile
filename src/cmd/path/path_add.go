@@ -1,8 +1,7 @@
 package path
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/app"
-	"github.com/carlosrodriguesf/dfile/src/app/path"
+	"github.com/carlosrodriguesf/dfile/src/model"
 	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +22,8 @@ func add(ctx context.Context) *cobra.Command {
 				return err
 			}
 
-			return app.Path().Add(ctx, args[0], path.AddConfig{
+			return ctx.App().Path().Add(model.Path{
+				Path:             args[0],
 				AcceptExtensions: acceptExtensions,
 				IgnoreFolders:    ignoreFolders,
 			})

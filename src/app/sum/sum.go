@@ -1,26 +1,33 @@
 package sum
 
 import (
+	"github.com/carlosrodriguesf/dfile/src/repository/file"
 	"github.com/carlosrodriguesf/dfile/src/tool/calculator"
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"sync"
 )
 
 type (
+	Options struct {
+		FileRep    file.Repository
+		Calculator calculator.Calculator
+	}
+
 	App interface {
-		Generate(ctx context.Context) error
-		GenerateFileSum(ctx context.Context, file string, persist bool)
-		Duplicated(ctx context.Context) map[string][]string
+		Generate() error
+		GenerateFileSum(file string)
+		Duplicated() (map[string][]string, error)
 	}
 
 	appImpl struct {
+		fileRep    file.Repository
 		calculator calculator.Calculator
 		mutex      *sync.Mutex
 	}
 )
 
-func New(calculator calculator.Calculator) App {
+func New(opts Options) App {
 	return &appImpl{
-		calculator: calculator,
+		fileRep:    opts.FileRep,
+		calculator: opts.Calculator,
 	}
 }

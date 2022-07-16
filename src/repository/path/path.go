@@ -33,9 +33,7 @@ func (r *repository) All() ([]model.Path, error) {
 	if err != nil {
 		return nil, hlog.LogError(err)
 	}
-	if !res.Next() {
-		return nil, sql.ErrNoRows
-	}
+	defer res.Close()
 
 	paths := make([]model.Path, 0)
 	if res.Next() {
@@ -49,12 +47,13 @@ func (r *repository) All() ([]model.Path, error) {
 		if err != nil {
 			return nil, hlog.LogError(err)
 		}
-		paths = append(paths)
+		paths = append(paths, path)
 	}
 
 	if err != nil {
 		return nil, hlog.LogError(err)
 	}
+
 	return paths, nil
 }
 

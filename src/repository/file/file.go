@@ -35,12 +35,10 @@ func (r *repository) All() ([]model.File, error) {
 	if err != nil {
 		return nil, hlog.LogError(err)
 	}
-	if !res.Next() {
-		return nil, sql.ErrNoRows
-	}
+	defer res.Close()
 
 	files := make([]model.File, 0)
-	if res.Next() {
+	for res.Next() {
 		var file model.File
 		err = res.Scan(
 			&file.Path,
@@ -50,7 +48,7 @@ func (r *repository) All() ([]model.File, error) {
 		if err != nil {
 			return nil, hlog.LogError(err)
 		}
-		files = append(files)
+		files = append(files, file)
 	}
 
 	if err != nil {
@@ -83,7 +81,7 @@ func (r *repository) Get(path string) (model.File, error) {
 }
 
 func (r *repository) Save(path model.File) error {
-	query := `INSERT INTO files(path, checksum, error) VALUES (?,?,?,?)`
+	query := `INSERT OR REPLACE INTO files(path, checksum, error) VALUES (?,?,?)`
 	_, err := r.db.Exec(
 		query,
 		path.Path,

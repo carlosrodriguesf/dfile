@@ -1,23 +1,23 @@
 package sum
 
-import (
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
-)
+import "github.com/carlosrodriguesf/dfile/src/tool/hlog"
 
-func (a appImpl) Duplicated(ctx context.Context) map[string][]string {
-	var (
-		dbFile = ctx.DBFile()
-		keys   = dbFile.GetFileKeys()
-		sumMap = make(map[string][]string)
-	)
+func (a appImpl) Duplicated() (map[string][]string, error) {
+	allFiles, err := a.fileRep.All()
+	if err != nil {
+		return nil, hlog.LogError(err)
+	}
 
-	for _, file := range keys {
-		entry := dbFile.GetFile(file)
-		if sumMap[entry.Hash] == nil {
-			sumMap[entry.Hash] = []string{file}
+	sumMap := make(map[string][]string)
+	for _, file := range allFiles {
+		if sumMap[file.Checksum] == nil {
+			sumMap[file.Checksum] = []string{file.Path}
 			continue
 		}
-		sumMap[entry.Hash] = append(sumMap[entry.Hash], file)
+		sumMap[file.Checksum] = append(
+			sumMap[file.Checksum],
+			file.Path,
+		)
 	}
 
 	for key, files := range sumMap {
@@ -26,5 +26,5 @@ func (a appImpl) Duplicated(ctx context.Context) map[string][]string {
 		}
 	}
 
-	return sumMap
+	return sumMap, nil
 }

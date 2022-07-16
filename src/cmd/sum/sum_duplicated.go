@@ -3,8 +3,8 @@ package sum
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/carlosrodriguesf/dfile/src/app"
 	"github.com/carlosrodriguesf/dfile/src/tool/context"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
@@ -19,11 +19,13 @@ func duplicated(ctx context.Context) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			outputFormat, err := cmd.Flags().GetString("output")
 			if err != nil {
-				log.Printf("error: %v", err)
-				return err
+				return hlog.LogError(err)
 			}
 
-			duplicated := app.Sum().Duplicated(ctx)
+			duplicated, err := ctx.App().Sum().Duplicated()
+			if err != nil {
+				return hlog.LogError(err)
+			}
 			switch outputFormat {
 			case "json":
 				err := json.NewEncoder(os.Stdout).Encode(duplicated)

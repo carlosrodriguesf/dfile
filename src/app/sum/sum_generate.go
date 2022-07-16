@@ -1,77 +1,64 @@
 package sum
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
-	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"fmt"
+	"github.com/carlosrodriguesf/dfile/src/model"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"github.com/carlosrodriguesf/dfile/src/tool/queue"
-	"log"
-	"sync"
 )
 
-func (a appImpl) Generate(ctx context.Context) error {
-	a.mutex = new(sync.Mutex)
+func (a appImpl) Generate() error {
+	allFiles, err := a.fileRep.All()
+	if err != nil {
+		return hlog.LogError(err)
+	}
 
-	var (
-		dbFile = ctx.DBFile()
-		keys   = dbFile.GetFileKeys()
-		q      = queue.New(10)
-	)
-
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("panic: %v", r)
-			dbFile.Persist()
-			panic(r)
-		}
-	}()
-
-	for _, file := range keys {
-		file := file
-
-		a.mutex.Lock()
-		entry := dbFile.GetFile(file)
-		a.mutex.Unlock()
-
-		if entry.Ready || entry.Error != "" {
+	q := queue.New(10)
+	for _, file := range allFiles {
+		fmt.Println(file)
+		if file.Checksum != "" {
 			continue
 		}
 
+		file := file
 		q.Run(func() {
-			a.GenerateFileSum(ctx, file, false)
+			a.GenerateFileSum(file.Path)
 		})
 	}
 
 	q.Wait()
 
-	return dbFile.Persist()
+	return nil
 }
 
-func (a *appImpl) GenerateFileSum(ctx context.Context, file string, persist bool) {
-	var (
-		dbFile    = ctx.DBFile()
-		hash, err = a.calculator.Calculate(file)
-	)
-
-	if a.mutex != nil {
-		a.mutex.Lock()
-		defer a.mutex.Unlock()
-	}
+func (a *appImpl) GenerateFileSum(file string) {
+	var hash, err = a.calculator.Calculate(file)
 
 	if err != nil {
-		dbFile.SetFile(file, dbfile.FileEntry{
-			Ready: false,
-			Error: err.Error(),
-		})
+		hlog.Error(err)
+		a.saveError(file, err)
+		return
 	}
-	dbFile.SetFile(file, dbfile.FileEntry{
-		Ready: true,
-		Hash:  hash,
-	})
 
-	if persist {
-		err := dbFile.Persist()
-		if err != nil {
-			log.Fatal(err)
-		}
+	a.saveChecksum(file, hash)
+}
+
+func (a *appImpl) saveError(file string, err error) {
+	err = a.fileRep.Save(model.File{
+		Path:  file,
+		Error: err.Error(),
+	})
+	if err != nil {
+		hlog.Error(err)
+	}
+}
+
+func (a *appImpl) saveChecksum(file string, hash string) {
+	err := a.fileRep.Save(model.File{
+		Path:     file,
+		Checksum: hash,
+	})
+	if err != nil {
+		hlog.Error(err)
 	}
 }

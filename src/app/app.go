@@ -16,7 +16,7 @@ type (
 		Watch() watch.App
 	}
 	container struct {
-		repository repository.Container
+		repositories repository.Container
 
 		path  path.App
 		sum   sum.App
@@ -24,15 +24,19 @@ type (
 	}
 )
 
-func NewContainer(repositoryContainer repository.Container) Container {
+func NewContainer(repositoies repository.Container) Container {
 	return &container{
-		repository: repositoryContainer,
+		repositories: repositoies,
 	}
 }
 
 func (c *container) Path() path.App {
 	if c.path == nil {
-		c.path = path.New(scanner.New(), c.Sum())
+		c.path = path.New(path.Options{
+			PathRep: c.repositories.Path(),
+			FileRep: c.repositories.File(),
+			Scanner: scanner.New(),
+		})
 	}
 	return c.path
 }
@@ -40,7 +44,10 @@ func (c *container) Path() path.App {
 func (c *container) Sum() sum.App {
 	if c.sum == nil {
 		c.sum = sum.New(
-			calculator.New(),
+			sum.Options{
+				FileRep:    c.repositories.File(),
+				Calculator: calculator.New(),
+			},
 		)
 	}
 	return c.sum
@@ -48,7 +55,11 @@ func (c *container) Sum() sum.App {
 
 func (c *container) Watch() watch.App {
 	if c.watch == nil {
-		c.watch = watch.New(c.Sum())
+		c.watch = watch.New(watch.Options{
+			PathRep: c.repositories.Path(),
+			FileRep: c.repositories.File(),
+			Sum:     c.Sum(),
+		})
 	}
 	return c.watch
 }

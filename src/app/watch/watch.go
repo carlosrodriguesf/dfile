@@ -1,43 +1,60 @@
 package watch
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/app/path"
+	"errors"
 	"github.com/carlosrodriguesf/dfile/src/app/sum"
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
-	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/repository/file"
+	"github.com/carlosrodriguesf/dfile/src/repository/path"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 )
 
 type (
+	Options struct {
+		PathRep path.Repository
+		FileRep file.Repository
+		Sum     sum.App
+	}
 	App interface {
-		Watch(ctx context.Context) error
+		Watch() error
 	}
 
 	appImpl struct {
+		pathRep path.Repository
+		fileRep file.Repository
 		appSum  sum.App
-		appPath path.App
 	}
 )
 
-func New(sum sum.App) App {
+func New(opts Options) App {
 	return &appImpl{
-		appSum: sum,
+		pathRep: opts.PathRep,
+		fileRep: opts.FileRep,
+		appSum:  opts.Sum,
 	}
 }
 
-func (a *appImpl) Watch(ctx context.Context) error {
+func (a *appImpl) Watch() error {
+	allPaths, err := a.pathRep.All()
+	if err != nil {
+		return hlog.LogError(err)
+	}
+	if len(allPaths) == 0 {
+		return hlog.LogError(errors.New("no paths to watch"))
+	}
+
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
 	defer watcher.Close()
 
-	go a.startWatch(ctx, watcher)
+	go a.startWatch(watcher)
 
-	for _, path := range ctx.DBFile().GetPathKeys() {
-		err = a.addPathIntoWatcher(ctx, watcher, path)
+	for _, currentPath := range allPaths {
+		err = a.addPathIntoWatcher(watcher, currentPath.Path)
 		if err != nil {
 			log.Printf("error: %v", err)
 			return err
@@ -49,37 +66,28 @@ func (a *appImpl) Watch(ctx context.Context) error {
 	return nil
 }
 
-func (a *appImpl) onRemove(ctx EventContext) {
-	dbFile := ctx.DBFile()
-	dbFile.DelFile(ctx.Event.Name)
-	err := dbFile.Persist()
-	if err != nil {
-		log.Fatal(err)
-	}
+func (a *appImpl) onRemove(event Event) {
+	a.fileRep.Remove(event.Name)
 }
 
-func (a *appImpl) onRename(ctx EventContext) {
-	ctx.DBFile().DelFile(ctx.Event.Name)
+func (a *appImpl) onRename(event Event) {
+	a.fileRep.Remove(event.Name)
 }
 
-func (a *appImpl) onCreate(ctx EventContext) {
-	if ctx.IsDir {
-		err := a.addPathIntoWatcher(ctx, ctx.Watcher, ctx.Event.Name)
+func (a *appImpl) onCreate(event Event) {
+	if event.IsDir {
+		err := a.addPathIntoWatcher(event.Watcher, event.Name)
 		if err != nil {
-			log.Printf("error: %v", err)
+			hlog.Error(err)
 		}
 		return
 	}
 
-	ctx.DBFile().SetFile(ctx.Event.Name, dbfile.FileEntry{
-		Ready: false,
-	})
-
-	go a.appSum.GenerateFileSum(ctx, ctx.Event.Name, true)
+	go a.appSum.GenerateFileSum(event.Event.Name)
 }
 
-func (a *appImpl) startWatch(ctx context.Context, watcher *fsnotify.Watcher) {
-	eventMap := map[fsnotify.Op]func(EventContext){
+func (a *appImpl) startWatch(watcher *fsnotify.Watcher) {
+	eventMap := map[fsnotify.Op]func(Event){
 		fsnotify.Remove: a.onRemove,
 		fsnotify.Rename: a.onRemove,
 		fsnotify.Create: a.onCreate,
@@ -98,8 +106,7 @@ func (a *appImpl) startWatch(ctx context.Context, watcher *fsnotify.Watcher) {
 					log.Printf("error: %v", err)
 					return
 				}
-				eventMap[event.Op](EventContext{
-					Context: ctx,
+				eventMap[event.Op](Event{
 					Watcher: watcher,
 					Event:   &event,
 					IsDir:   info.IsDir(),
@@ -114,7 +121,7 @@ func (a *appImpl) startWatch(ctx context.Context, watcher *fsnotify.Watcher) {
 	}
 }
 
-func (a *appImpl) addPathIntoWatcher(ctx context.Context, watcher *fsnotify.Watcher, path string) error {
+func (a *appImpl) addPathIntoWatcher(watcher *fsnotify.Watcher, path string) error {
 	log.Println("watching path:", path)
 	err := watcher.Add(path)
 	if err != nil {
@@ -130,7 +137,7 @@ func (a *appImpl) addPathIntoWatcher(ctx context.Context, watcher *fsnotify.Watc
 
 	for _, entry := range entries {
 		if entry.IsDir() {
-			err = a.addPathIntoWatcher(ctx, watcher, path+"/"+entry.Name())
+			err = a.addPathIntoWatcher(watcher, path+"/"+entry.Name())
 			if err != nil {
 				log.Printf("error: %v", err)
 				return err

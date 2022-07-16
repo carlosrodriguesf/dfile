@@ -6,7 +6,8 @@ import (
 	"github.com/carlosrodriguesf/dfile/src/cmd/sum"
 	"github.com/carlosrodriguesf/dfile/src/cmd/watch"
 	"github.com/carlosrodriguesf/dfile/src/tool/context"
-	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/dbm"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"github.com/carlosrodriguesf/dfile/src/tool/logger"
 	"github.com/spf13/cobra"
 	"io"
@@ -31,12 +32,18 @@ func startLogger(logFilePath string, verbose bool) (io.WriteCloser, error) {
 }
 
 func startDBFile(ctx context.Context, dbFilePath string) error {
-	dbFile := dbfile.New(dbFilePath, dbfile.Options{
-		AutoPersist:      true,
-		AutoPersistCount: 1000,
-	})
-	ctx.SetDBFile(dbFile)
-	return dbFile.Load()
+	db, err := dbm.Open(dbFilePath)
+	if err != nil {
+		return hlog.LogError(err)
+	}
+	ctx.Load(db)
+	//dbFile := dbfile.New(dbFilePath, dbfile.Options{
+	//	AutoPersist:      true,
+	//	AutoPersistCount: 1000,
+	//})
+	//ctx.SetDBFile(dbFile)
+	//return dbFile.Load()
+	return nil
 }
 
 func Run() error {

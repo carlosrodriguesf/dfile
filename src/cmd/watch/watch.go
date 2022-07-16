@@ -1,7 +1,6 @@
 package watch
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/app"
 	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +11,7 @@ func Watch(ctx context.Context) *cobra.Command {
 		Short: "watch for file changes",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return app.Watch().Watch(ctx)
+			return ctx.App().Watch().Watch()
 		},
 	}
 }

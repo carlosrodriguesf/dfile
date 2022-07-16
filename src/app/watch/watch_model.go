@@ -1,13 +1,11 @@
 package watch
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
 	"github.com/fsnotify/fsnotify"
 )
 
-type EventContext struct {
-	context.Context
+type Event struct {
+	*fsnotify.Event
 	Watcher *fsnotify.Watcher
-	Event   *fsnotify.Event
 	IsDir   bool
 }

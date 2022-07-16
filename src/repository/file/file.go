@@ -65,6 +65,8 @@ func (r *repository) Get(path string) (model.File, error) {
 	if err != nil {
 		return file, hlog.LogError(err)
 	}
+	defer res.Close()
+
 	if !res.Next() {
 		return file, sql.ErrNoRows
 	}

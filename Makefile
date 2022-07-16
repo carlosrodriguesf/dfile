@@ -1,35 +1,35 @@
 path-add: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log path add ./test/
+	bin/dfile -v -d dfile.db -l dfile.log path add ./test/
 
 path-remove: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log path remove "./test/*"
+	bin/dfile -v -d dfile.db -l dfile.log path remove "./test/"
 
 path-sync: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log path sync
+	bin/dfile -v -d dfile.db -l dfile.log path sync
 
 path-list: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log path list
+	bin/dfile -v -d dfile.db -l dfile.log path list
 
 sum-generate: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log sum generate
+	bin/dfile -v -d dfile.db -l dfile.log sum generate
 
 sum-duplicated: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated
+	bin/dfile -v -d dfile.db -l dfile.log sum duplicated
 
 sum-duplicated-json: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated -o json
+	bin/dfile -v -d dfile.db -l dfile.log sum duplicated -o json
 
 sum-duplicated-json-i: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log sum duplicated -o json-i
+	bin/dfile -v -d dfile.db -l dfile.log sum duplicated -o json-i
 
 db-rewrite: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log db rewrite
+	bin/dfile -v -d dfile.db -l dfile.log db rewrite
 
 db-rewrite-indented: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log db rewrite -i
+	bin/dfile -v -d dfile.db -l dfile.log db rewrite -i
 
 watch: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log watch
+	bin/dfile -v -d dfile.db -l dfile.log watch
 
 build:
 	go build -o bin/dfile main.go

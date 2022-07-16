@@ -1,31 +1,36 @@
 package path
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/app/sum"
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
-	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/model"
+	"github.com/carlosrodriguesf/dfile/src/repository/file"
+	"github.com/carlosrodriguesf/dfile/src/repository/path"
 	"github.com/carlosrodriguesf/dfile/src/tool/scanner"
 )
 
 type (
-	AddConfig dbfile.PathEntry
+	Options struct {
+		PathRep path.Repository
+		FileRep file.Repository
+		Scanner scanner.Scanner
+	}
 
 	App interface {
-		Add(ctx context.Context, path string, config AddConfig) error
-		Remove(ctx context.Context, path string) error
-		Sync(ctx context.Context) error
-		List(ctx context.Context) []string
+		Add(path model.Path) error
+		Remove(path string) error
+		List() ([]string, error)
 	}
 
 	appImpl struct {
+		pathRep path.Repository
+		fileRep file.Repository
 		scanner scanner.Scanner
-		sum     sum.App
 	}
 )
 
-func New(scanner scanner.Scanner, sum sum.App) App {
+func New(opts Options) App {
 	return &appImpl{
-		scanner: scanner,
-		sum:     sum,
+		pathRep: opts.PathRep,
+		fileRep: opts.FileRep,
+		scanner: opts.Scanner,
 	}
 }

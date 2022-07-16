@@ -1,35 +1,42 @@
 package path
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
-	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"context"
+	"github.com/carlosrodriguesf/dfile/src/model"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"github.com/carlosrodriguesf/dfile/src/tool/scanner"
 	"log"
 	"strings"
 )
 
-func (a *appImpl) Sync(ctx context.Context) error {
-	dbFile := ctx.DBFile()
+func (a *appImpl) Sync() error {
+	allPaths, err := a.pathRep.All()
+	if err != nil {
+		return hlog.LogError(err)
+	}
 
-	for _, path := range dbFile.GetPathKeys() {
-		err := a.syncPath(ctx, path, dbFile.GetPath(path))
+	allFiles, err := a.fileRep.All()
+	if err != nil {
+		return hlog.LogError(err)
+	}
+
+	for _, path := range allPaths {
+		err = a.syncPath(path, allFiles)
 		if err != nil {
-			log.Printf("error: %v", err)
-			return err
+			return hlog.LogError(err)
 		}
 	}
 
 	return nil
 }
 
-func (a *appImpl) syncPath(ctx context.Context, path string, entry dbfile.PathEntry) error {
+func (a *appImpl) syncPath(path model.Path, allFiles []model.File) error {
 	var (
-		dbFile        = ctx.DBFile()
 		filesFromDB   = make(map[string]bool)
 		filesFromDisk = make(map[string]bool)
-		files, err    = a.scanner.Scan(ctx, path, scanner.ScanOptions{
-			AcceptExtensions: entry.AcceptExtensions,
-			IgnoreFolders:    entry.IgnoreFolders,
+		files, err    = a.scanner.Scan(context.Background(), path.Path, scanner.ScanOptions{
+			AcceptExtensions: path.AcceptExtensions,
+			IgnoreFolders:    path.IgnoreFolders,
 		})
 	)
 
@@ -42,25 +49,31 @@ func (a *appImpl) syncPath(ctx context.Context, path string, entry dbfile.PathEn
 		filesFromDisk[file] = true
 	}
 
-	for _, file := range dbFile.GetFileKeys() {
-		if strings.HasPrefix(file, path) {
-			filesFromDB[file] = true
+	for _, file := range allFiles {
+		if strings.HasPrefix(file.Path, path.Path) {
+			filesFromDB[file.Path] = true
 		}
 	}
 
+	var (
+		filesToRemove = make([]string, 0)
+		filesToAdd    = make([]model.File, 0)
+	)
+
 	for file := range filesFromDisk {
 		if !filesFromDB[file] {
-			dbFile.SetFile(file, dbfile.FileEntry{
-				Ready: false,
-			})
+			filesToAdd = append(filesToAdd, model.File{Path: file})
 		}
 	}
 
 	for file := range filesFromDB {
 		if !filesFromDisk[file] {
-			dbFile.DelFile(file)
+			filesToRemove = append(filesToRemove, file)
 		}
 	}
 
-	return dbFile.Persist()
+	// TODO: a.fileRep.SaveAll(filesToAdd)
+	// TODO: a.fileRep.DeleteAll(filesToDelete)
+
+	return nil
 }

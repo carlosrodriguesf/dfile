@@ -1,46 +1,64 @@
 package path
 
 import (
+	"context"
+	"github.com/carlosrodriguesf/dfile/src/model"
 	"github.com/carlosrodriguesf/dfile/src/tool/apperrors"
-	"github.com/carlosrodriguesf/dfile/src/tool/context"
-	"github.com/carlosrodriguesf/dfile/src/tool/dbfile"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"github.com/carlosrodriguesf/dfile/src/tool/scanner"
 	"path/filepath"
 )
 
-func (a *appImpl) Add(ctx context.Context, path string, config AddConfig) error {
-	dbFile := ctx.DBFile()
+func (a *appImpl) Add(path model.Path) error {
+	var err error
 
-	path, err := filepath.Abs(path)
+	path.Path, err = filepath.Abs(path.Path)
 	if err != nil {
 		return err
 	}
 
-	if dbFile.HasPath(path) {
+	exists, err := a.pathRep.Has(path.Path)
+	if err != nil {
+		return hlog.LogError(err)
+	}
+	if exists {
 		return apperrors.ErrPathAlreadyExists
 	}
 
-	dbFile.SetPath(path, dbfile.PathEntry(config))
-
-	files, err := a.scanner.Scan(ctx, path, scanner.ScanOptions{
-		AcceptExtensions: config.AcceptExtensions,
-		IgnoreFolders:    config.IgnoreFolders,
-	})
+	err = a.pathRep.Save(path)
 	if err != nil {
-		return err
+		return hlog.LogError(err)
 	}
 
+	return a.scan(path)
+}
+
+func (a *appImpl) scan(path model.Path) error {
+	files, err := a.scanner.Scan(context.Background(), path.Path, scanner.ScanOptions{
+		AcceptExtensions: path.AcceptExtensions,
+		IgnoreFolders:    path.IgnoreFolders,
+	})
+	if err != nil {
+		return hlog.LogError(err)
+	}
+
+	existingFiles, err := a.fileRep.ExistingFiles()
+	if err != nil {
+		return hlog.LogError(err)
+	}
+
+	filesToSave := make([]model.File, 0)
 	for _, file := range files {
-		if !dbFile.HasFile(file) {
-			dbFile.SetFile(file, dbfile.FileEntry{
-				Ready: false,
+		if !existingFiles[file] {
+			filesToSave = append(filesToSave, model.File{
+				Path: file,
 			})
 		}
 	}
 
-	err = dbFile.Persist()
+	err = a.fileRep.SaveAll(filesToSave)
 	if err != nil {
-		return err
+		return hlog.LogError(err)
 	}
 
 	return nil

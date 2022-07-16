@@ -1,4 +1,4 @@
-package lh
+package hlog
 
 import (
 	"io"

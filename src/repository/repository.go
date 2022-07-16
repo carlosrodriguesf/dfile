@@ -5,10 +5,25 @@ import (
 	"github.com/carlosrodriguesf/dfile/src/repository/path"
 )
 
-var container = struct {
-	path path.Repository
-}{}
+type (
+	Container interface {
+		Path() path.Repository
+	}
+	container struct {
+		db   *sql.DB
+		path path.Repository
+	}
+)
 
-func Path(db *sql.DB) path.Repository {
-	return path.NewRepository(db)
+func NewContainer(db *sql.DB) Container {
+	return &container{
+		db: db,
+	}
+}
+
+func (c container) Path() path.Repository {
+	if c.path == nil {
+		c.path = path.NewRepository(c.db)
+	}
+	return nil
 }

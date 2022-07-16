@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
-	"github.com/carlosrodriguesf/dfile/src/tool/lh"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 )
 
 type StringArray []string
@@ -15,7 +15,7 @@ func (arr *StringArray) Scan(value interface{}) error {
 	}
 	err := json.Unmarshal([]byte(value.(string)), arr)
 	if err != nil {
-		return lh.LogError(err)
+		return hlog.LogError(err)
 	}
 	return nil
 }
@@ -23,7 +23,7 @@ func (arr *StringArray) Scan(value interface{}) error {
 func (arr StringArray) Value() (driver.Value, error) {
 	dt, err := json.Marshal(arr)
 	if err != nil {
-		return nil, lh.LogError(err)
+		return nil, hlog.LogError(err)
 	}
 	return string(dt), nil
 }

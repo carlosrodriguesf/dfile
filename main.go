@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/carlosrodriguesf/dfile/src/repository"
 	"github.com/carlosrodriguesf/dfile/src/tool/dbm"
-	"github.com/carlosrodriguesf/dfile/src/tool/lh"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	"log"
 )
 
@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer lh.LogClose(db)
+	defer hlog.LogClose(db)
 
 	pathRepository := repository.Path(db)
 	//err = pathRepository.Save(model.Path{

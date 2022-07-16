@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/carlosrodriguesf/dfile/src/tool/dbm/migration"
-	"github.com/carlosrodriguesf/dfile/src/tool/lh"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
@@ -14,12 +14,12 @@ import (
 func Open(file string) (*sql.DB, error) {
 	exists, err := isDBExists(file)
 	if err != nil {
-		return nil, lh.LogError(err)
+		return nil, hlog.LogError(err)
 	}
 
 	db, err := sql.Open("sqlite3", file)
 	if err != nil {
-		return nil, lh.LogError(err)
+		return nil, hlog.LogError(err)
 	}
 
 	if !exists {
@@ -32,12 +32,12 @@ func Open(file string) (*sql.DB, error) {
 			INSERT INTO db_version(version) VALUES (0);
 		`)
 		if err != nil {
-			return nil, lh.LogError(err)
+			return nil, hlog.LogError(err)
 		}
 
 		rowsAffected, err := res.RowsAffected()
 		if err != nil {
-			return nil, lh.LogError(err)
+			return nil, hlog.LogError(err)
 		}
 		if rowsAffected != 1 {
 			return nil, errors.New("error when creating db")
@@ -46,7 +46,7 @@ func Open(file string) (*sql.DB, error) {
 
 	err = migration.Up(db)
 	if err != nil {
-		return nil, lh.LogError(err)
+		return nil, hlog.LogError(err)
 	}
 	return db, nil
 }
@@ -59,5 +59,5 @@ func isDBExists(file string) (bool, error) {
 	if err == os.ErrNotExist || strings.HasSuffix(err.Error(), "no such file or directory") {
 		return false, nil
 	}
-	return false, lh.LogError(err)
+	return false, hlog.LogError(err)
 }

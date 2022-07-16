@@ -2,17 +2,16 @@ package path
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/carlosrodriguesf/dfile/src/model"
 	"github.com/carlosrodriguesf/dfile/src/tool/dbm"
-	"github.com/carlosrodriguesf/dfile/src/tool/lh"
+	"github.com/carlosrodriguesf/dfile/src/tool/hlog"
 )
 
 type (
 	Repository interface {
-		Save(path model.Path) error
+		All() ([]model.Path, error)
 		Get(path string) (model.Path, error)
-		GetPaths() ([]string, error)
+		Save(path model.Path) error
 		Remove(path string) error
 	}
 
@@ -27,28 +26,35 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) Save(path model.Path) error {
-	query := `INSERT INTO paths(path, enabled, ignore_folders, accept_extensions) VALUES (?,?,?,?)`
-
-	res, err := r.db.Exec(
-		query,
-		path.Path,
-		path.Enabled,
-		dbm.JSONArray(path.IgnoreFolders),
-		dbm.JSONArray(path.AcceptExtensions),
-	)
-	fmt.Println("exec: ", query, err)
-	rr, _ := res.RowsAffected()
-	fmt.Println(rr)
+func (r *repository) All() ([]model.Path, error) {
+	query := `SELECT path, enabled, ignore_folders, accept_extensions FROM paths`
+	res, err := r.db.Query(query)
 	if err != nil {
-		return lh.LogError(err)
+		return nil, hlog.LogError(err)
 	}
-	return nil
-}
+	if !res.Next() {
+		return nil, sql.ErrNoRows
+	}
 
-func (r *repository) Remove(path string) error {
-	//TODO implement me
-	panic("implement me")
+	paths := make([]model.Path, 0)
+	if res.Next() {
+		var path model.Path
+		err = res.Scan(
+			&path.Path,
+			&path.Enabled,
+			dbm.JSONArray(&path.IgnoreFolders),
+			dbm.JSONArray(&path.AcceptExtensions),
+		)
+		if err != nil {
+			return nil, hlog.LogError(err)
+		}
+		paths = append(paths)
+	}
+
+	if err != nil {
+		return nil, hlog.LogError(err)
+	}
+	return paths, nil
 }
 
 func (r *repository) Get(path string) (model.Path, error) {
@@ -57,7 +63,7 @@ func (r *repository) Get(path string) (model.Path, error) {
 	query := `SELECT path, enabled, ignore_folders, accept_extensions FROM paths WHERE path = ?`
 	res, err := r.db.Query(query, path)
 	if err != nil {
-		return data, lh.LogError(err)
+		return data, hlog.LogError(err)
 	}
 	if !res.Next() {
 		return data, sql.ErrNoRows
@@ -70,12 +76,38 @@ func (r *repository) Get(path string) (model.Path, error) {
 		dbm.JSONArray(&data.AcceptExtensions),
 	)
 	if err != nil {
-		return data, lh.LogError(err)
+		return data, hlog.LogError(err)
 	}
 	return data, nil
 }
 
-func (r *repository) GetPaths() ([]string, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) Save(path model.Path) error {
+	query := `INSERT INTO paths(path, enabled, ignore_folders, accept_extensions) VALUES (?,?,?,?)`
+	_, err := r.db.Exec(
+		query,
+		path.Path,
+		path.Enabled,
+		dbm.JSONArray(path.IgnoreFolders),
+		dbm.JSONArray(path.AcceptExtensions),
+	)
+	if err != nil {
+		return hlog.LogError(err)
+	}
+	return nil
+}
+
+func (r *repository) Remove(path string) error {
+	query := `DELETE FROM paths WHERE path = ?`
+	res, err := r.db.Exec(query, path)
+	if err != nil {
+		return hlog.LogError(err)
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return hlog.LogError(err)
+	}
+	if rowsAffected == 0 {
+		return hlog.LogError(sql.ErrNoRows)
+	}
+	return nil
 }

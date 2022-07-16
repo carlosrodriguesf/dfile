@@ -3,16 +3,19 @@ package sum
 import (
 	"github.com/carlosrodriguesf/dfile/src/pkg/calculator"
 	"github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"sync"
 )
 
 type (
 	App interface {
 		Generate(ctx context.Context) error
+		GenerateFileSum(ctx context.Context, file string, persist bool)
 		Duplicated(ctx context.Context) map[string][]string
 	}
 
 	appImpl struct {
 		calculator calculator.Calculator
+		mutex      *sync.Mutex
 	}
 )
 

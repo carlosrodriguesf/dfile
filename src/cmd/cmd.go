@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"github.com/carlosrodriguesf/dfile/src/cmd/db"
 	"github.com/carlosrodriguesf/dfile/src/cmd/path"
 	"github.com/carlosrodriguesf/dfile/src/cmd/sum"
-	context2 "github.com/carlosrodriguesf/dfile/src/pkg/context"
+	"github.com/carlosrodriguesf/dfile/src/cmd/watch"
+	"github.com/carlosrodriguesf/dfile/src/pkg/context"
 	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
 	"github.com/carlosrodriguesf/dfile/src/pkg/logger"
 	"github.com/spf13/cobra"
@@ -30,7 +30,7 @@ func startLogger(logFilePath string, verbose bool) (io.WriteCloser, error) {
 	return logWriter, nil
 }
 
-func startDBFile(ctx context2.Context, dbFilePath string) error {
+func startDBFile(ctx context.Context, dbFilePath string) error {
 	dbFile := dbfile.New(dbFilePath, dbfile.Options{
 		AutoPersist:      true,
 		AutoPersistCount: 1000,
@@ -46,13 +46,14 @@ func Run() error {
 		logWriter               io.WriteCloser
 
 		resourcePath = getDefaultResourcePath()
-		ctx          = context2.New(context.Background())
+		ctx          = context.New()
 		rootCmd      = cobra.Command{TraverseChildren: true}
 	)
 
 	rootCmd.AddCommand(path.Path(ctx))
 	rootCmd.AddCommand(sum.Sum(ctx))
 	rootCmd.AddCommand(db.DB(ctx))
+	rootCmd.AddCommand(watch.Watch(ctx))
 
 	rootCmd.Flags().StringVarP(&dbFilePath, "database", "d", resourcePath+"/dfile.db", "Database file")
 	rootCmd.Flags().StringVarP(&logFilePath, "log-file", "l", resourcePath+"/dfile.log", "Log file")

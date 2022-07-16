@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 )
 
 type (
@@ -41,6 +42,8 @@ type (
 		autoPersist             bool
 		autoPersistCount        int
 		autoPersistCountCurrent int
+
+		persistMutex sync.Mutex
 	}
 )
 
@@ -137,6 +140,9 @@ func (m *dbFile) DelFile(file string) {
 }
 
 func (m *dbFile) Persist(opts ...PersistOptions) error {
+	m.persistMutex.Lock()
+	defer m.persistMutex.Unlock()
+
 	log.Println("recreating db file")
 	file, err := os.Create(m.dbFilePath)
 	if err != nil {

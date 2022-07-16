@@ -10,9 +10,6 @@ path-sync: build
 path-list: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log path list
 
-path-watch: build
-	bin/dfile -v -d dfile.local.db -l dfile.local.log path watch
-
 sum-generate: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log sum generate
 
@@ -30,6 +27,9 @@ db-rewrite: build
 
 db-rewrite-indented: build
 	bin/dfile -v -d dfile.local.db -l dfile.local.log db rewrite -i
+
+watch: build
+	bin/dfile -v -d dfile.local.db -l dfile.local.log watch
 
 build:
 	go build -o bin/dfile main.go

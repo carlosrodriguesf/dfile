@@ -20,9 +20,9 @@ type (
 	}
 )
 
-func New(ctx context.Context) Context {
+func New() Context {
 	return &contextImpl{
-		Context: ctx,
+		Context: context.Background(),
 	}
 }
 

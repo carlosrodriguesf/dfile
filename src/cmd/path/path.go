@@ -15,6 +15,5 @@ func Path(ctx context.Context) *cobra.Command {
 	pathCmd.AddCommand(remove(ctx))
 	pathCmd.AddCommand(sync(ctx))
 	pathCmd.AddCommand(list(ctx))
-	pathCmd.AddCommand(watch(ctx))
 	return &pathCmd
 }

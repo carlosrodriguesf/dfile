@@ -15,7 +15,6 @@ type (
 		Remove(ctx context.Context, path string) error
 		Sync(ctx context.Context) error
 		List(ctx context.Context) []string
-		Watch(ctx context.Context) error
 	}
 
 	appImpl struct {

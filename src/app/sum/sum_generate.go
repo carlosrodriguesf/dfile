@@ -1,7 +1,6 @@
 package sum
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/pkg/calculator"
 	"github.com/carlosrodriguesf/dfile/src/pkg/context"
 	"github.com/carlosrodriguesf/dfile/src/pkg/dbfile"
 	"github.com/carlosrodriguesf/dfile/src/pkg/queue"
@@ -10,11 +9,11 @@ import (
 )
 
 func (a appImpl) Generate(ctx context.Context) error {
+	a.mutex = new(sync.Mutex)
+
 	var (
-		mutex  sync.Mutex
 		dbFile = ctx.DBFile()
 		keys   = dbFile.GetFileKeys()
-		calc   = calculator.New()
 		q      = queue.New(10)
 	)
 
@@ -29,35 +28,50 @@ func (a appImpl) Generate(ctx context.Context) error {
 	for _, file := range keys {
 		file := file
 
-		mutex.Lock()
+		a.mutex.Lock()
 		entry := dbFile.GetFile(file)
-		mutex.Unlock()
+		a.mutex.Unlock()
 
 		if entry.Ready || entry.Error != "" {
 			continue
 		}
 
 		q.Run(func() {
-			hash, err := calc.Calculate(file)
-
-			mutex.Lock()
-			defer mutex.Unlock()
-
-			if err != nil {
-				dbFile.SetFile(file, dbfile.FileEntry{
-					Ready: false,
-					Error: err.Error(),
-				})
-				return
-			}
-			dbFile.SetFile(file, dbfile.FileEntry{
-				Ready: true,
-				Hash:  hash,
-			})
+			a.GenerateFileSum(ctx, file, false)
 		})
 	}
 
 	q.Wait()
 
 	return dbFile.Persist()
+}
+
+func (a *appImpl) GenerateFileSum(ctx context.Context, file string, persist bool) {
+	var (
+		dbFile    = ctx.DBFile()
+		hash, err = a.calculator.Calculate(file)
+	)
+
+	if a.mutex != nil {
+		a.mutex.Lock()
+		defer a.mutex.Unlock()
+	}
+
+	if err != nil {
+		dbFile.SetFile(file, dbfile.FileEntry{
+			Ready: false,
+			Error: err.Error(),
+		})
+	}
+	dbFile.SetFile(file, dbfile.FileEntry{
+		Ready: true,
+		Hash:  hash,
+	})
+
+	if persist {
+		err := dbFile.Persist()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }

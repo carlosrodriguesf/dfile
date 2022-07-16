@@ -1,4 +1,4 @@
-package path
+package watch
 
 import (
 	"github.com/carlosrodriguesf/dfile/src/app"
@@ -6,13 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func watch(ctx context.Context) *cobra.Command {
+func Watch(ctx context.Context) *cobra.Command {
 	return &cobra.Command{
 		Use:   "watch",
-		Short: "generate sum for scanned paths",
+		Short: "watch for file changes",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return app.Path().Watch(ctx)
+			return app.Watch().Watch(ctx)
 		},
 	}
 }

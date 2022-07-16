@@ -22,12 +22,6 @@ sum-duplicated-json: build
 sum-duplicated-json-i: build
 	bin/dfile -v -d dfile.db -l dfile.log sum duplicated -o json-i
 
-db-rewrite: build
-	bin/dfile -v -d dfile.db -l dfile.log db rewrite
-
-db-rewrite-indented: build
-	bin/dfile -v -d dfile.db -l dfile.log db rewrite -i
-
 watch: build
 	bin/dfile -v -d dfile.db -l dfile.log watch
 

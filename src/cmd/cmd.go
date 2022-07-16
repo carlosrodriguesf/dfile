@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/carlosrodriguesf/dfile/src/cmd/db"
 	"github.com/carlosrodriguesf/dfile/src/cmd/path"
 	"github.com/carlosrodriguesf/dfile/src/cmd/sum"
 	"github.com/carlosrodriguesf/dfile/src/cmd/watch"
@@ -31,18 +30,12 @@ func startLogger(logFilePath string, verbose bool) (io.WriteCloser, error) {
 	return logWriter, nil
 }
 
-func startDBFile(ctx context.Context, dbFilePath string) error {
-	db, err := dbm.Open(dbFilePath)
+func startDB(ctx context.Context, dbFilePath string) error {
+	dbInstance, err := dbm.Open(dbFilePath)
 	if err != nil {
 		return hlog.LogError(err)
 	}
-	ctx.Load(db)
-	//dbFile := dbfile.New(dbFilePath, dbfile.Options{
-	//	AutoPersist:      true,
-	//	AutoPersistCount: 1000,
-	//})
-	//ctx.SetDBFile(dbFile)
-	//return dbFile.Load()
+	ctx.Load(dbInstance)
 	return nil
 }
 
@@ -59,7 +52,6 @@ func Run() error {
 
 	rootCmd.AddCommand(path.Path(ctx))
 	rootCmd.AddCommand(sum.Sum(ctx))
-	rootCmd.AddCommand(db.DB(ctx))
 	rootCmd.AddCommand(watch.Watch(ctx))
 
 	rootCmd.Flags().StringVarP(&dbFilePath, "database", "d", resourcePath+"/dfile.db", "Database file")
@@ -71,7 +63,7 @@ func Run() error {
 			log.Printf("error: %v", err)
 			return err
 		}
-		if err = startDBFile(ctx, dbFilePath); err != nil {
+		if err = startDB(ctx, dbFilePath); err != nil {
 			log.Printf("error: %v", err)
 			return err
 		}

@@ -11,6 +11,7 @@ type (
 	Repository interface {
 		All() ([]model.Path, error)
 		Get(path string) (model.Path, error)
+		Has(path string) (bool, error)
 		Save(path model.Path) error
 		Remove(path string) error
 	}
@@ -79,6 +80,24 @@ func (r *repository) Get(path string) (model.Path, error) {
 		return data, hlog.LogError(err)
 	}
 	return data, nil
+}
+
+func (r *repository) Has(path string) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM paths WHERE path = ?)`
+	res, err := r.db.Query(query, path)
+	if err != nil {
+		return false, hlog.LogError(err)
+	}
+	defer res.Close()
+
+	res.Next()
+
+	var exists bool
+	err = res.Scan(&exists)
+	if err != nil {
+		return false, hlog.LogError(err)
+	}
+	return exists, nil
 }
 
 func (r *repository) Save(path model.Path) error {

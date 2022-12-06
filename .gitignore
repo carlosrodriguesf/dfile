@@ -1,2 +1,5 @@
 .idea
-bin/
+bin
+test
+dfile.db
+dfile.log
